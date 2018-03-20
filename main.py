@@ -9,6 +9,12 @@ def move_by_rotation(rect, rot, speed):
     rect = rect.move(-math.cos(math.radians(rot)) * speed, math.sin(math.radians(rot)) * speed)
     return rect
 
+def remove_missile(list):
+    for rect in list:
+        if rect[1].x > resolution[0] or rect[1].x < 0 or rect[1].y > resolution[1] or rect[1].y < 0:
+            list.remove(rect)
+    return list
+
 
 def invert_position(rect):
     # Inverte a posiçao na tela se ultrapassar do limite da resoluçao
@@ -98,10 +104,12 @@ while inGame:
     #spaceship_rect = invert_position(spaceship_rect)
 
     # Tiro
-    pop = []
     for m in range(len(missiles_array)):
         # Posiçao do disparo
         missiles_array[m][1] = move_by_rotation(missiles_array[m][1], missiles_array[m][2], -missile_speed)
+
+    # Remove os misseis fora da tela
+    missiles_array = remove_missile(missiles_array)
     #####
 
     # Atualizaçao da tela
