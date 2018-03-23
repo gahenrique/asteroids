@@ -54,6 +54,7 @@ spaceship = pygame.transform.scale(spaceship, (35, 44))
 
 asteroid = pygame.image.load(os.path.join('sprites', 'asteroid.png'))
 asteroid = pygame.transform.scale(asteroid, (52, 52))
+asteroid_mini = pygame.transform.scale(asteroid, (26, 26))
 
 missile = pygame.image.load(os.path.join('sprites', 'missile.png'))
 missile = pygame.transform.scale(missile, (16, 4))
@@ -67,9 +68,8 @@ missiles_array = []
 missile_speed = 10
 
 # Array e variavel para os asteroides
-# Asteroids Array indices: 0 == Asteroid_Surface / 1 == Retangulo / 2 == Rotaçao
+# Asteroids Array indices: 0 == Asteroid_Surface / 1 == Retangulo / 2 == Rotaçao / 3 == Raio / 4 == 0(Grande) ou 1(Pequeno)
 asteroids_array = []
-asteroid_radius = 24
 asteroid_speed = 3
 
 for ast in range(num_asteroids):
@@ -77,7 +77,7 @@ for ast in range(num_asteroids):
     x = randint(0, resolution[0])
     y = randint(0, resolution[1])
     rot = randint(0, 360)
-    asteroids_array.append([asteroid, pygame.Rect(x, y, asteroid.get_width(), asteroid.get_height()), rot])
+    asteroids_array.append([asteroid, pygame.Rect(x, y, asteroid.get_width(), asteroid.get_height()), rot, 24, 0])
 
 inGame = True
 
@@ -130,9 +130,9 @@ while inGame:
     spaceship_array[1] = invert_position(spaceship_array[1])
 
     # Tiro
-    for m in range(len(missiles_array)):
+    for m in missiles_array:
         # Posiçao do disparo
-        missiles_array[m][1] = move_by_rotation(missiles_array[m][1], missiles_array[m][2], -missile_speed)
+        m[1] = move_by_rotation(m[1], m[2], -missile_speed)
 
     # Remove os misseis fora da tela
     missiles_array = remove_missile(missiles_array)
@@ -146,18 +146,30 @@ while inGame:
         ast[1] = invert_position(ast[1])
 
         # Checa se o asteroide colidiu
-        if distance_rect(ast[1], spaceship_array[1]) - (asteroid_radius + spaceship_array[5]) < 0:
+        if distance_rect(ast[1], spaceship_array[1]) - (ast[4] + spaceship_array[5]) < 0:
             print("colidiu")
+            #inGame = False
 
+        # Checa se o missel colidiu com o asteroide
         for m in missiles_array:
-            # Checa se o missel colidiu com o asteroide
             if m[1].colliderect(ast[1]):
-                print("missel")
+                if ast[4] == 0:
+                    # Cria 2 novos asteroides menores caso ele seja grande
+                    for _ in range(2):
+                        rot = randint(0, 360)
+                        asteroids_array.append([asteroid_mini,
+                                                pygame.Rect(ast[1].x, ast[1].y, asteroid_mini.get_width(), asteroid_mini.get_height()),
+                                                rot, 12, 1])
 
+                #Destroi o asteroide e o missel
+                missiles_array.remove(m)
+                asteroids_array.remove(ast)
     #####
 
     # Atualizaçao da tela
+    # Limpa a tela com a cor preta
     screen.fill((0, 0, 0))
+
     '''
     Alcance da nave (retangulo e circulo) para teste de colisao
     # aux = pygame.Surface((spaceship_array[1].w, spaceship_array[1].h))
@@ -169,14 +181,14 @@ while inGame:
     screen.blit(spaceship_array[0], spaceship_array[1])
 
     # Blit Misseis
-    for i in range(len(missiles_array)):
+    for m in missiles_array:
         '''
         Alcance dos misseis (retangulo) para teste de colisao
-        aux = pygame.Surface((missiles_array[i][0].get_size()))
+        aux = pygame.Surface((m[0].get_size()))
         aux.fill((255, 255, 255))
-        screen.blit(aux, missiles_array[i][1])'
+        screen.blit(aux, m[1])
         '''
-        screen.blit(missiles_array[i][0], missiles_array[i][1])
+        screen.blit(m[0], m[1])
 
     # Blit Asteroides
     for ast in asteroids_array:
