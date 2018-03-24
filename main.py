@@ -47,6 +47,7 @@ pygame.display.set_caption("Asteroids")
 FPS = 30
 num_asteroids = 6
 clock = pygame.time.Clock()
+UI_Font = pygame.font.SysFont("Times New Roman", 24)
 
 # Importando os sprites
 spaceship = pygame.image.load(os.path.join('sprites', 'spaceship1.png'))
@@ -60,10 +61,13 @@ missile = pygame.image.load(os.path.join('sprites', 'missile.png'))
 missile = pygame.transform.scale(missile, (16, 4))
 
 # Spaceship array indices:
-# 0 == Nave_Surface / 1 == Retangulo / 2 == Velocidade / 3 == Velocidade_Rotaçao / 4 == Rotaçao_Atual / 5 == Raio
-spaceship_array = [spaceship, pygame.Rect(300, 300, spaceship.get_width(), spaceship.get_height()), 0, 0, 90, 17]
+# 0 == Nave_Surface / 1 == Retangulo / 2 == Velocidade / 3 == Velocidade_Rotaçao /
+# 4 == Rotaçao_Atual / 5 == Raio / 6 == Vidas
+spaceship_array = [spaceship, pygame.Rect(300, 300, spaceship.get_width(), spaceship.get_height()), 0, 0, 90, 35, 3]
 
 # Array e variaveis para os disparos
+# Missiles array indices:
+# 0 == Missel_Surface, 1 == Retangulo, 2 == Rotaçao
 missiles_array = []
 missile_speed = 10
 
@@ -71,19 +75,29 @@ missile_speed = 10
 # Asteroids Array indices: 0 == Asteroid_Surface / 1 == Retangulo / 2 == Rotaçao / 3 == Raio / 4 == 0(Grande) ou 1(Pequeno)
 asteroids_array = []
 asteroid_speed = 3
-
+# Inicializando os asteroids em posiçoes aleatorias
 for ast in range(num_asteroids):
-    # Inicializando os asteroids em posiçoes aleatorias
     x = randint(0, resolution[0])
     y = randint(0, resolution[1])
     rot = randint(0, 360)
     asteroids_array.append([asteroid, pygame.Rect(x, y, asteroid.get_width(), asteroid.get_height()), rot, 24, 0])
 
+# UI Variaveis e arrays
+lifes_array = []
+life_img = pygame.transform.scale(spaceship, (int(spaceship.get_width() * 0.5), int(spaceship.get_height() * 0.5)))
+life_startX = 30
+life_startY = 50
+score = 0
+# Inicializando as imagens da UI
+for i in range(spaceship_array[6]):
+    lifes_array.append([life_img, pygame.Rect(life_startX, life_startY, life_img.get_width(), life_img.get_height())])
+    life_startX += 30
+
 inGame = True
 
 while inGame:
+    # Tratamento de eventos
     for event in pygame.event.get():
-        # Tratamento de eventos
         # Sair
         if event.type == QUIT:
             inGame = False
@@ -93,7 +107,6 @@ while inGame:
 
             # Atirar
             if event.key == K_SPACE:
-                # Indice [0] contém a surface do disparo, [1] o retangulo, [2] sua rotaçao
                 missiles_array.append([missile, pygame.Rect(spaceship_array[1].centerx, spaceship_array[1].centery,
                                                             missile.get_width(), missile.get_height()),
                                        spaceship_array[4]])
@@ -147,18 +160,27 @@ while inGame:
 
         # Checa se o asteroide colidiu
         if distance_rect(ast[1], spaceship_array[1]) - (ast[4] + spaceship_array[5]) < 0:
-            print("colidiu")
-            #inGame = False
+            # Desconta uma vida caso haja colisao e reseta a posiçao
+            spaceship_array = [spaceship, pygame.Rect(300, 300, spaceship.get_width(), spaceship.get_height()), 0, 0,
+                               90, 35, spaceship_array[6]-1]
+            lifes_array.pop()
+
+            # Encerra o loop se as vidas acabarem
+            if spaceship_array[6] == 0:
+                inGame = False
 
         # Checa se o missel colidiu com o asteroide
         for m in missiles_array:
             if m[1].colliderect(ast[1]):
+                # Adiciona pontos ao score
+                score += 10
                 if ast[4] == 0:
                     # Cria 2 novos asteroides menores caso ele seja grande
                     for _ in range(2):
                         rot = randint(0, 360)
                         asteroids_array.append([asteroid_mini,
-                                                pygame.Rect(ast[1].x, ast[1].y, asteroid_mini.get_width(), asteroid_mini.get_height()),
+                                                pygame.Rect(ast[1].x, ast[1].y, asteroid_mini.get_width(),
+                                                            asteroid_mini.get_height()),
                                                 rot, 12, 1])
 
                 #Destroi o asteroide e o missel
@@ -200,6 +222,14 @@ while inGame:
         pygame.draw.circle(screen,(255,255,255), ast[1].center, 24)
         '''
         screen.blit(ast[0], ast[1])
+
+    # Blit Vidas UI
+    for v in lifes_array:
+        screen.blit(v[0], v[1])
+
+    # Blit Score UI
+    score_Label = UI_Font.render(str(score), True, (255,255,255))
+    screen.blit(score_Label, (60, 20))
 
     pygame.display.flip()
     clock.tick(30)
