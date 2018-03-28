@@ -94,7 +94,6 @@ for i in range(spaceship_array[6]):
     life_startX += 30
 
 inGame = True
-
 while inGame:
     # Tratamento de eventos
     for event in pygame.event.get():
@@ -129,7 +128,8 @@ while inGame:
                 spaceship_array[3] = 0
             if event.key == K_d:
                 spaceship_array[3] = 0
-        ######
+
+    # -------------------------------------------------------------------------
 
     # Atualizaçao do jogo
     # Rotaçao da nave
@@ -186,7 +186,8 @@ while inGame:
                 #Destroi o asteroide e o missel
                 missiles_array.remove(m)
                 asteroids_array.remove(ast)
-    #####
+
+    # -------------------------------------------------------------------------
 
     # Atualizaçao da tela
     # Limpa a tela com a cor preta
@@ -233,6 +234,6 @@ while inGame:
 
     pygame.display.flip()
     clock.tick(30)
-    #####
+    # -------------------------------------------------------------------------
 
 pygame.quit()
