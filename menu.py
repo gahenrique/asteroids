@@ -18,12 +18,12 @@ UI_Font = pygame.font.SysFont("Times New Roman", 24)
 logo = pygame.image.load(os.path.join('sprites', 'logo.png'))
 logo = pygame.transform.scale(logo, (int(logo.get_width() * 0.5), int(logo.get_height() * 0.5)))
 logo_Rect = pygame.Rect(0, 0, logo.get_width(), logo.get_height())
-logo_Rect.center = (resolution[0] / 2, resolution[1] / 4)
+logo_Rect.center = (resolution[0] / 2, resolution[1] / 2.5)
 
 # Menu opçoes
 start = UI_Font.render("Jogar", True, (255, 255, 255))
 start_Rect = pygame.Rect(0, 0, start.get_width(), start.get_height())
-start_Rect.center = (logo_Rect.centerx, logo_Rect.centery * 2.4)
+start_Rect.center = (logo_Rect.centerx, logo_Rect.centery * 1.6)
 
 ranking = UI_Font.render("Ranking", True, (255, 255, 255))
 ranking_Rect = pygame.Rect(0, 0, ranking.get_width(), ranking.get_height())
