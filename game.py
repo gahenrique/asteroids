@@ -70,6 +70,9 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
     ovoship = pygame.image.load(os.path.join('sprites', 'Ovo.png'))
 
     # Importando sons
+    pygame.mixer.music.load(os.path.join('songs', 'trilhasonora.wav'))
+    pygame.mixer.music.play(-1)
+
     startSongArray = ["Churrasqueira Controle.wav", "E agora para desligar.wav", "Para apagar voce chama bombeiro.wav",
                       "Ta Pegando Fogo!.wav"]
 
@@ -136,9 +139,11 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
             # Sair
             if event.type == QUIT:
                 inGame = False
+                pygame.mixer.music.stop()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     inGame = False
+                    pygame.mixer.music.stop()
 
                 # Atirar
                 if event.key == K_SPACE:
@@ -221,6 +226,7 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
                 # Encerra o loop se as vidas acabarem
                 if spaceship_array[6] == 0:
                     inGame = False
+                    pygame.mixer.music.stop()
                     scoreScene.main(screen, resolution, FPS, clock, score)
                 elif spaceship_array[6] == 1:
                     lastLife = pygame.mixer.Sound(os.path.join
