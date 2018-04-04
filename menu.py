@@ -3,6 +3,7 @@ from pygame.locals import *
 import pygame
 from game import mainGame
 from creditosScene import mainCred
+from random import randint
 
 
 def main(screen, resolution, FPS, UI_Font, clock):
@@ -28,6 +29,9 @@ def main(screen, resolution, FPS, UI_Font, clock):
     sair = UI_Font.render("Sair", True, (255, 255, 255))
     sair_Rect = pygame.Rect(0, 0, sair.get_width(), sair.get_height())
     sair_Rect.center = (creditos_Rect.centerx, creditos_Rect.centery * 1.1)
+
+    quitSongsArray = ["Boa semana para galera.wav", "Boa viagem e adeus.wav"]
+    quitSong = pygame.mixer.Sound(os.path.join('songs', quitSongsArray[randint(0, len(quitSongsArray) - 1)]))
 
     menu = True
     while menu:
@@ -64,13 +68,20 @@ def main(screen, resolution, FPS, UI_Font, clock):
                     sair = UI_Font.render("Sair", True, (255, 255, 255))
 
             if event.type == MOUSEBUTTONUP:
+                # Click Jogar
                 if start_Rect.collidepoint(event.pos[0], event.pos[1]):
                     mainGame(screen, resolution, FPS, UI_Font, clock)
+                # Click Creditos
                 if creditos_Rect.collidepoint(event.pos[0], event.pos[1]):
                     mainCred(screen, resolution, FPS, UI_Font, clock)
+                # Click Ranking
+                if ranking_Rect.collidepoint(event.pos[0], event.pos[1]):
+                    pass
+                # Click Sair
                 if sair_Rect.collidepoint(event.pos[0], event.pos[1]):
+                    quitSong.play()
+                    pygame.time.delay(2000)
                     menu = False
-
 
         # -------------------------------------------------------------------------
 

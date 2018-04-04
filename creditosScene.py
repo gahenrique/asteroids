@@ -1,6 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys
+import os
 
 
 def mainCred(screen, resolution, FPS, UI_Font, clock):
@@ -21,6 +22,9 @@ def mainCred(screen, resolution, FPS, UI_Font, clock):
     continuarRect = pygame.Rect(0, 0, continuarLbl.get_width(), continuarLbl.get_height())
     continuarRect.center = (textRects[-1].centerx, textRects[-1].centery * 1.5)
 
+    creditosSong = pygame.mixer.Sound(os.path.join('songs', 'Trabalha e estuda ou so faz isso.wav'))
+    creditosSong.play()
+
     inCreditos = True
     while inCreditos:
         for event in pygame.event.get():
@@ -31,7 +35,7 @@ def mainCred(screen, resolution, FPS, UI_Font, clock):
                     sys.exit()
                 else:
                     inCreditos = False
-            if event.type == MOUSEBUTTONDOWN:
+            if event.type == MOUSEBUTTONUP:
                 inCreditos = False
 
         screen.fill((0, 0, 0))

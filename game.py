@@ -4,7 +4,6 @@ import math
 from pygame.locals import *
 from random import randint
 import scoreScene
-import sys
 
 
 def move_by_rotation(rect, rot, speed):
@@ -13,10 +12,11 @@ def move_by_rotation(rect, rot, speed):
     return rect
 
 
-def remove_missile(list, resolution):
+def remove_missile(list, resolution, errouSong):
     # Entra com uma lista e se o retangulo contido estiver fora da tela ele e removido do array
     for rect in list:
         if rect[1].x > resolution[0] or rect[1].x < 0 or rect[1].y > resolution[1] or rect[1].y < 0:
+            errouSong.play()
             list.remove(rect)
     return list
 
@@ -43,16 +43,22 @@ def instantiateAsteroids(num, resolution, asteroids_array, asteroid):
     for ast in range(num):
         x = randint(0, resolution[0])
         y = 0
-        rot = randint(0, 360)
+        rot = randint(1, 360)
         asteroids_array.append([asteroid, pygame.Rect(x, y, asteroid.get_width(), asteroid.get_height()), rot, 20, 0])
+
+
+def instantiateOvo(ovoship, resolution, ovoshipArray, raio):
+    x = 0
+    y = randint(0, resolution[0])
+    rot = randint(1, 360)
+    if rot == 90:
+        rot += randint(1, 45)
+    ovoshipArray.append([ovoship, pygame.Rect(x, y, ovoship.get_width(), ovoship.get_height()), 5, rot, raio])
 
 
 def mainGame(screen, resolution, FPS, UI_Font, clock):
     # Importando os sprites
     spaceship = pygame.image.load(os.path.join('sprites', 'spaceship.png'))
-    # Redimensionamento, se necessario
-    # spaceship = pygame.transform.scale(spaceship, (int(spaceship.get_width() * 0.9),
-    # int(spaceship.get_height() * 0.9)))
 
     asteroid = pygame.image.load(os.path.join('sprites', 'Churrasqueira.png'))
     asteroid = pygame.transform.scale(asteroid, (int(asteroid.get_width() * 0.75), int(asteroid.get_height() * 0.75)))
@@ -60,19 +66,41 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
                                                       int(asteroid.get_height() * 0.6)))
 
     missile = pygame.image.load(os.path.join('sprites', 'Extintor.png'))
-    # Redimensionamento, se necessario
-    # missile = pygame.transform.scale(missile, (16, 4))
+
+    ovoship = pygame.image.load(os.path.join('sprites', 'Ovo.png'))
 
     # Importando sons
     startSongArray = ["Churrasqueira Controle.wav", "E agora para desligar.wav", "Para apagar voce chama bombeiro.wav",
                       "Ta Pegando Fogo!.wav"]
-    # Tocando aleatoriamente um dos sons de startSongArray
+
+    lastLifeSongArray = ["C Vai Morrer.wav", "Ensaio para desastre.wav"]
+
+    loseLifeSongArray = ["Chegou minha hora.wav", "Como isso aconteceu.wav"]
+
+    allDestroiedSongArray = ["Hora de Alegria.wav", "Oh Loco.wav", "Porra meu"]
+
+    errouSong = pygame.mixer.Sound(os.path.join('songs', 'Errou.wav'))
+
+    quebrouOvo = pygame.mixer.Sound(os.path.join('songs', 'Destruiu Meu Ovo.wav'))
+
+    # Tocando aleatoriamente um dos sons de startSongArray quando o jogo inicia
     startSong = pygame.mixer.Sound(os.path.join('songs', startSongArray[randint(0, len(startSongArray)-1)]))
     startSong.play()
+
     # Spaceship array indices:
     # 0 == Nave_Surface / 1 == Retangulo / 2 == Velocidade / 3 == Velocidade_Rotaçao /
     # 4 == Rotaçao_Atual / 5 == Raio / 6 == Vidas
     spaceship_array = [spaceship, pygame.Rect(300, 300, spaceship.get_width(), spaceship.get_height()), 0, 0, 90, 25, 3]
+
+    # Ovoship array indices:
+    # 0 == ovoship_Surface / 1 == Retangulo / 2 == Velocidade / 3 == Rotaçao / 4 == Raio
+    ovoshipArray = []
+    ovoshipRaio = 20
+
+    # Ovoship spawn time
+    ovoshipTime = 30
+    ovoTimer = True
+    ovoshipVarTime = ovoshipTime
 
     # Array e variaveis para os disparos
     # Missiles array indices:
@@ -147,16 +175,34 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
 
         # Posiçao da nave /// -cos(x) para x e sen(x) para y
         spaceship_array[1] = move_by_rotation(spaceship_array[1], spaceship_array[4], spaceship_array[2])
-
         spaceship_array[1] = invert_position(spaceship_array[1], resolution)
+
+        # Posiçao do ovo
+        if not ovoTimer:
+            ovoshipArray[0][1] = move_by_rotation(ovoshipArray[0][1], ovoshipArray[0][3], ovoshipArray[0][2])
+            ovoshipArray[0][1] = invert_position(ovoshipArray[0][1], resolution)
+
+            # Colisao spaceship e ovoship
+            if distance_rect(spaceship_array[1], ovoshipArray[0][1]) - (spaceship_array[5] + ovoshipArray[0][4]) < 0:
+                spaceship_array = [spaceship, pygame.Rect(300, 300, spaceship.get_width(), spaceship.get_height()),
+                                   0, 0, 90, spaceship_array[5], spaceship_array[6]-1]
+                lifes_array.pop()
 
         # Tiro
         for m in missiles_array:
             # Posiçao do disparo
             m[1] = move_by_rotation(m[1], m[2], -missile_speed)
 
+            if not ovoTimer:
+                if m[1].colliderect(ovoshipArray[0][1]):
+                    score += 50
+                    ovoshipArray.clear()
+                    ovoTimer = True
+                    missiles_array.remove(m)
+                    quebrouOvo.play()
+
         # Remove os misseis fora da tela
-        missiles_array = remove_missile(missiles_array, resolution)
+        missiles_array = remove_missile(missiles_array, resolution, errouSong)
 
         # Asteroides
         for ast in asteroids_array:
@@ -176,7 +222,15 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
                 if spaceship_array[6] == 0:
                     inGame = False
                     scoreScene.main(screen, resolution, FPS, clock, score)
+                elif spaceship_array[6] == 1:
+                    lastLife = pygame.mixer.Sound(os.path.join
+                                                  ('songs', lastLifeSongArray[randint(0, len(lastLifeSongArray) - 1)]))
+                    lastLife.play()
+                    lifes_array.pop()
                 else:
+                    loseLife = pygame.mixer.Sound(os.path.join
+                                                  ('songs', loseLifeSongArray[randint(0, len(loseLifeSongArray) - 1)]))
+                    loseLife.play()
                     lifes_array.pop()
 
             # Checa se o missel colidiu com o asteroide
@@ -198,8 +252,20 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
                     asteroids_array.remove(ast)
 
         if len(asteroids_array) == 0:
+            allDestroied = pygame.mixer.Sound(os.path.join
+                                          ('songs', allDestroiedSongArray[randint(0, len(allDestroiedSongArray) - 1)]))
+            allDestroied.play()
             num_asteroids += 1
             instantiateAsteroids(num_asteroids, resolution, asteroids_array, asteroid)
+
+        if ovoshipVarTime <= 0:
+            instantiateOvo(ovoship, resolution, ovoshipArray, ovoshipRaio)
+            ovoTimer = False
+            ovoshipVarTime = ovoshipTime
+
+
+        if ovoTimer:
+            ovoshipVarTime -= (clock.get_time() / 1000)
 
         # -------------------------------------------------------------------------
 
@@ -237,7 +303,6 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
             screen.blit(aux, ast[1])
             pygame.draw.circle(screen,(255,255,255), ast[1].center, ast[3])
             '''
-
             screen.blit(ast[0], ast[1])
 
         # Blit Vidas UI
@@ -247,6 +312,12 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
         # Blit Score UI
         score_Label = UI_Font.render(str(score), True, (255,255,255))
         screen.blit(score_Label, (60, 20))
+
+        # Blit Ovo
+        if not ovoTimer:
+            screen.blit(ovoshipArray[0][0], ovoshipArray[0][1])
+            # Alcance do ovoship para teste de colisao
+            # pygame.draw.circle(screen,(255,255,255), ovoshipArray[0][1].center, ovoshipArray[0][4])
 
         pygame.display.flip()
         clock.tick(FPS)
