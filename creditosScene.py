@@ -1,6 +1,5 @@
 import pygame
 from pygame.locals import *
-import sys
 import os
 
 
@@ -29,12 +28,9 @@ def mainCred(screen, resolution, FPS, UI_Font, clock):
     while inCreditos:
         for event in pygame.event.get():
             if event.type == QUIT:
-                sys.exit()
+                inCreditos = False
             if event.type == KEYDOWN:
-                if event.type == K_ESCAPE:
-                    sys.exit()
-                else:
-                    inCreditos = False
+                inCreditos = False
             if event.type == MOUSEBUTTONUP:
                 inCreditos = False
 

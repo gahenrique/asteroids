@@ -3,6 +3,7 @@ from pygame.locals import *
 import pygame
 from game import mainGame
 from creditosScene import mainCred
+from ranking import mainRank
 from random import randint
 
 
@@ -40,7 +41,6 @@ def main(screen, resolution, FPS, UI_Font, clock):
             # Sair
             if event.type == QUIT:
                 menu = False
-                break
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     menu = False
@@ -76,7 +76,7 @@ def main(screen, resolution, FPS, UI_Font, clock):
                     mainCred(screen, resolution, FPS, UI_Font, clock)
                 # Click Ranking
                 if ranking_Rect.collidepoint(event.pos[0], event.pos[1]):
-                    pass
+                    mainRank(screen, resolution, FPS, UI_Font, clock)
                 # Click Sair
                 if sair_Rect.collidepoint(event.pos[0], event.pos[1]):
                     quitSong.play()
