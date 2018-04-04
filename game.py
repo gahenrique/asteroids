@@ -80,7 +80,7 @@ def mainGame(screen, resolution, FPS, UI_Font, clock):
 
     loseLifeSongArray = ["Chegou minha hora.wav", "Como isso aconteceu.wav"]
 
-    allDestroiedSongArray = ["Hora de Alegria.wav", "Oh Loco.wav", "Porra meu"]
+    allDestroiedSongArray = ["Hora de Alegria.wav", "Oh Loco.wav", "Porra meu.wav"]
 
     errouSong = pygame.mixer.Sound(os.path.join('songs', 'Errou.wav'))
 
